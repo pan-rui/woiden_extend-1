@@ -34,7 +34,7 @@ GITHUB = False
 USERNAME = os.environ['USERNAME']
 PASSWORD = os.environ['PASSWORD']
 
-origin_host = "woiden.id"
+origin_host = os.environ['HOST']
 renew_path = "/vps-renew"
 login_path = "/login"
 info_path = "/vps-info"
