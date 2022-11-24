@@ -74,8 +74,8 @@ jobs:
           sed -i -e "s:badge/".*"-activity:badge/"$b"-activity:g" README.md
       - name: Push
         run: |
-          git config --local user.email "zdy.mail@foxmail.com"
-          git config --local user.name "Zakkoree"
+          git config --local user.email "79277490@qq.com"
+          git config --local user.name "pan-rui"
           git remote set-url origin https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git commit -a -m "Renew"
           git push
