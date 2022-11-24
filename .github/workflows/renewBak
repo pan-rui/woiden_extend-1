@@ -1,0 +1,82 @@
+name: 续订
+
+on: 
+  workflow_dispatch:
+  schedule:
+    - cron: "30 1 */3 * *"
+env:
+  HOST: "woiden.id"
+  USERNAME: ${{ secrets.USERNAME }}
+  PASSWORD: ${{ secrets.PASSWORD }}
+  APP_ID: ${{ secrets.APP_ID }}
+  API_KEY: ${{ secrets.API_KEY }}
+  SECRET_KEY: ${{ secrets.SECRET_KEY }}
+  TWOCAPTCHA_TOKEN: ${{ secrets.TWOCAPTCHA_TOKEN }}
+  TELE_ID: ${{ secrets.TELE_ID }}
+  TELE_TOKEN: ${{ secrets.TELE_TOKEN }}
+  ASR_CHOICE: ${{ secrets.ASR_CHOICE }}
+  IBM_URL: ${{ secrets.IBM_URL }}
+  SECRET_ID: ${{ secrets.SECRET_ID }}
+
+#       sudo sed -i 's/azure\.//' /etc/apt/sources.list 防止apt安装失败
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      check: ${{ steps.check.outputs.check }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+        
+      - id: check
+        name: Check condition
+        run: |
+          renewTime=$(cat renewTime)
+          interval=$(( ($(date -d "now" +%s) - $(date -d "$renewTime" +%s))/(24*60*60) )) 2>&1 
+          if [ "$?" = 0 ] && [ $interval -gt 0 ] && [ $interval -lt 8 ]; then
+            echo "check=success" >> $GITHUB_OUTPUT
+          else
+            echo "check=fail" >> $GITHUB_OUTPUT
+          fi
+#   sed -i '22s/^#//' main.py
+#   sed -i '402,406s/^#//' main.py
+#   sed -i '22s/^/#/' main.py
+#   sed -i '402,406s/^/#/' main.py
+  renew:
+    runs-on: ubuntu-latest
+    needs: check
+    if: needs.check.outputs.check == 'success'
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+        
+      - name: Install Python
+        run: |
+          sudo sed -i 's/azure\.//' /etc/apt/sources.list && sudo apt update && \
+          sudo apt install python3
+      
+      - name: Install requirements
+        run: |
+          pip3 install -r ./requirements.txt
+          playwright install --with-deps
+
+      - name: Renew
+        run: |
+          sed -i -e "s:GITHUB = False:GITHUB = True:g" main.py
+          
+          python3 main.py
+          
+          sed -i -e "s:GITHUB = True:GITHUB = False:g" main.py
+          
+          
+          a=$(cat renewTime)
+          b=${a//-/.}
+          sed -i -e "s:badge/".*"-activity:badge/"$b"-activity:g" README.md
+      - name: Push
+        run: |
+          git config --local user.email "79277490@qq.com"
+          git config --local user.name "pan-rui"
+          git remote set-url origin https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git commit -a -m "Renew"
+          git push
