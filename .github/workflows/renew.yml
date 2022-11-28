@@ -34,7 +34,7 @@ jobs:
         run: |
           renewTime=$(cat renewTime)
           interval=$(( ($(date -d "now" +%s) - $(date -d "$renewTime" +%s))/(24*60*60) )) 2>&1 
-          if [ "$?" = 0 ] && [ $interval -g 0 ] && [ $interval -lt 8 ]; then
+          if [ "$?" = 0 ] && [ $interval -ge 0 ] && [ $interval -lt 8 ]; then
             echo "check=success" >> $GITHUB_OUTPUT
           else
             echo "check=fail" >> $GITHUB_OUTPUT
