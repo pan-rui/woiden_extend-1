@@ -2,8 +2,8 @@ name: 续订wo
 
 on: 
   workflow_dispatch:
-  schedule:
-    - cron: "30 1 * * 1,4"
+#  schedule:
+#    - cron: "30 1 * * 1,4"
 env:
   HOST: "woiden.id"
   USERNAME: ${{ secrets.USERNAME }}
